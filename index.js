@@ -9,9 +9,9 @@ process.on("uncaughtException", (err) => {
   console.log(`Shutting down the server due to Uncaught Exception`);
   process.exit(1);
 });
-
-
-
+app.get("/", (req, res) => {
+  res.status(200).send({ msg: "Working App" });
+});
 
 
 connectDatabase();
