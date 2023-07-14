@@ -12,12 +12,7 @@ const upload = require("./middleware/fileUpload");
 // require("dotenv").config();
 
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,  
-  })
-);
+app.use(cors({ origin: true, credentials: true, }));
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
@@ -61,7 +56,7 @@ app.use("/api/v1/cart", cart);
 app.use('/api/v1/driver', driver);
 app.use('/api/v1/notify', notify);
 app.use('/api/v1/banner', banner)
-app.use('/api/v1/help',help );
+app.use('/api/v1/help', help);
 app.use('/api/v1/terms', terms);
 app.use('/api/v1/privacy', policy);
 app.use(errorMiddleware);

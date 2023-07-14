@@ -5,15 +5,14 @@ const Otp = require("../models/otpModel")
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
-const jwt  = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 const cloudinary = require("cloudinary");
 const { OAuth2Client } = require("google-auth-library");
-const { sendSMS, verifySMS } = require("../utils/sendOTP");
+// const { sendSMS, verifySMS } = require("../utils/sendOTP");
 const otpHelper = require("../utils/otp");
-const { singleFileHandle} = require("../utils/fileHandle");
+const { singleFileHandle } = require("../utils/fileHandle");
 const { brotliCompress } = require("zlib");
 const JWTkey = process.env.JWT_SECRET
-// Google O Auth
 
 exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
   const googleClient = new OAuth2Client({
@@ -43,7 +42,7 @@ exports.signInWithGoogle = catchAsyncErrors(async (req, res, next) => {
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, phone, password,role} = req.body;
+  const { name, phone, password, role } = req.body;
 
   console.log(name, phone, password)
   const otp = await otpHelper.generateOTP(4);
@@ -51,7 +50,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     name,
     phone,
     password,
-    role, 
+    role,
     otp
   });
   console.log(user)
@@ -62,14 +61,14 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   })
 });
 
-exports.GetALlSubdomain = catchAsyncErrors(async(req,res) => {
-  try{
-  const result = await User.find({role: "subadmin"});
-  res.status(200).json({
-    message: "ok", 
-    result: result 
-  })
-  }catch(err){
+exports.GetALlSubdomain = catchAsyncErrors(async (req, res) => {
+  try {
+    const result = await User.find({ role: "subadmin" });
+    res.status(200).json({
+      message: "ok",
+      result: result
+    })
+  } catch (err) {
     res.status(200).json({
       message: "not ok",
       error: err.message
@@ -79,7 +78,7 @@ exports.GetALlSubdomain = catchAsyncErrors(async(req,res) => {
 
 
 exports.registerVonder = catchAsyncErrors(async (req, res, next) => {
-  const { name, phone,email, password,role} = req.body;
+  const { name, phone, email, password, role } = req.body;
 
   console.log(name, phone, password, email)
   const otp = await otpHelper.generateOTP(4);
@@ -88,7 +87,7 @@ exports.registerVonder = catchAsyncErrors(async (req, res, next) => {
     phone,
     email,
     password,
-    role, 
+    role,
     otp
   });
   console.log(user)
@@ -100,7 +99,7 @@ exports.registerVonder = catchAsyncErrors(async (req, res, next) => {
 });
 // Facebook Authentication
 
-exports.signInWithFacebook = catchAsyncErrors(async (req, res, next) => {});
+exports.signInWithFacebook = catchAsyncErrors(async (req, res, next) => { });
 
 // Send OTP
 
@@ -118,7 +117,7 @@ exports.signInWithFacebook = catchAsyncErrors(async (req, res, next) => {});
 //   try{
 //     const Data = await User.findOne({phone: req.body.phone})
 //     if(!Data){
-      //  const otp = await otpHelper.generateOTP(4);
+//  const otp = await otpHelper.generateOTP(4);
 //       const data =  await User.create({
 //          phone: req.body.phone,
 //          otp: otp,
@@ -143,39 +142,39 @@ exports.signInWithFacebook = catchAsyncErrors(async (req, res, next) => {});
 // Verify OTP
 
 exports.accountVerificationOTP = catchAsyncErrors(async (req, res, next) => {
-  try{
-  const user = await User.findOne({
-    otp: req.body.otp
-  })
+  try {
+    const user = await User.findOne({
+      otp: req.body.otp
+    })
 
-  console.log("user",user)
-  if(!user) {
-    return next(new ErrorHander("Invalid OTP!", 400))
+    console.log("user", user)
+    if (!user) {
+      return next(new ErrorHander("Invalid OTP!", 400))
+    }
+    //  const token =  jwt.sign(
+    //     { user_id: user._id },
+    //     JWTkey,
+    //   );
+    res.status(200).json({
+      message: "Verifyed"
+    })
+
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    })
   }
-//  const token =  jwt.sign(
-//     { user_id: user._id },
-//     JWTkey,
-//   );
-  res.status(200).json({
-    message: "Verifyed"
-  })
-  
-}catch(err){
-  res.status(400).json({
-    message: err.message
-  })
-}
 });
 
 // Login User
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
-  const {phone, password } = req.body;
+  const { phone, password } = req.body;
 
   if (!phone || !password) {
     return next(new ErrorHander("Please Enter Email & Password", 400));
   }
 
-  const user = await User.findOne({ phone}).select(
+  const user = await User.findOne({ phone }).select(
     "+password"
   );
 
@@ -185,30 +184,30 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Invalid  password", 400));
   }
 
-  
+
   if (!user) {
     return next(new ErrorHander("Invalid phone Number", 401));
   }
 
-  if(user){
-   // const otp = await sendOtp(user, "account_verification");
-   const token =  jwt.sign(
-    { user_id: user._id },
-    JWTkey,
-  );
+  if (user) {
+    // const otp = await sendOtp(user, "account_verification");
+    const token = jwt.sign(
+      { user_id: user._id },
+      JWTkey,
+    );
     return res.status(201).json({
       success: true,
-      Id: user._id, 
+      Id: user._id,
       token: token
     })
   }
- 
+
   sendToken(user, 200, res);
 });
 
 
 exports.loginVendor = catchAsyncErrors(async (req, res, next) => {
-  const {email, password } = req.body;
+  const { email, password } = req.body;
   console.log(email);
   console.log(password)
 
@@ -216,7 +215,7 @@ exports.loginVendor = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Please Enter Email & Password", 400));
   }
 
-  const user = await User.findOne({email: email}).select(
+  const user = await User.findOne({ email: email }).select(
     "+password"
   );
 
@@ -227,24 +226,24 @@ exports.loginVendor = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Invalid  password", 400));
   }
 
-  
+
   if (!user) {
     return next(new ErrorHander("Invalid phone Number", 401));
   }
 
-  if(user){
-   // const otp = await sendOtp(user, "account_verification");
-   const token =  jwt.sign(
-    { user_id: user._id },
-    JWTkey,
-  );
+  if (user) {
+    // const otp = await sendOtp(user, "account_verification");
+    const token = jwt.sign(
+      { user_id: user._id },
+      JWTkey,
+    );
     return res.status(201).json({
       success: true,
-      Id: user._id, 
+      Id: user._id,
       token: token
     })
   }
- 
+
   sendToken(user, 200, res);
 });
 
@@ -263,10 +262,10 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
 
 // Forgot Password
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
-  const user = await User.findOne({phone: req.body.phone});
+  const user = await User.findOne({ phone: req.body.phone });
   let otp;
 
-  if(!user){
+  if (!user) {
     next(new ErrorHander("user with phone numebr not registered", 400))
   }
 
@@ -280,20 +279,20 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 })
 
 exports.passwordResetOtp = catchAsyncErrors(async (req, res, next) => {
-  const user = await User.findOne({phone: req.body.phone});
+  const user = await User.findOne({ phone: req.body.phone });
 
-  if(!user) {
+  if (!user) {
     return next(new ErrorHander("Invalid OTP!", 400))
   }
 
   const otpDoc = await Otp.findOne({
     user: user._id,
     otp: req.body.otp,
-    expires: {$gt: Date.now()},
+    expires: { $gt: Date.now() },
     type: "password_reset"
   });
 
-  if(!otpDoc){
+  if (!otpDoc) {
     return next(new ErrorHander("Invalid OTP!", 400));
   }
 
@@ -417,14 +416,14 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 
 // update User Profile
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
-////req.body.image = `${process.env.IMAGE_BASE_URL}/${req.file.filename}`
- //const imagesLinks = await multipleFileHandle(req.files,req);
+  ////req.body.image = `${process.env.IMAGE_BASE_URL}/${req.file.filename}`
+  //const imagesLinks = await multipleFileHandle(req.files,req);
 
-const newUserData = {
+  const newUserData = {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
-   
+
   };
   console.log(newUserData)
   const user = await User.findByIdAndUpdate(req.user, newUserData, {
@@ -504,51 +503,51 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 
-exports.AddUser = async(req,res) => {
-  try{
-  const data  = {
-    name: req.body.name,
-    image: req.body.image,
-    email: req.body.email,
-   phone: req.body.phone, 
-   password: req.body.password
-  }
-  const Data = await User.create(data) ;
-  res.status(200).json({
-    message: "User is Added By Admin",
-    user: Data
-  })
-  }catch(err){
-      console.log(err);
-      res.status(400).json({
-          message: err.message
-      })
+exports.AddUser = async (req, res) => {
+  try {
+    const data = {
+      name: req.body.name,
+      image: req.body.image,
+      email: req.body.email,
+      phone: req.body.phone,
+      password: req.body.password
+    }
+    const Data = await User.create(data);
+    res.status(200).json({
+      message: "User is Added By Admin",
+      user: Data
+    })
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({
+      message: err.message
+    })
   }
 }
 
 
-exports.ChagePaymentStatus = async(req, res) => {
-  try{
-  const result = await User.findById({_id: req.params.id});
-  if(result.cod_count === "active"){
-    
-    result.cod_count = "inactive"
+exports.ChagePaymentStatus = async (req, res) => {
+  try {
+    const result = await User.findById({ _id: req.params.id });
+    if (result.cod_count === "active") {
+
+      result.cod_count = "inactive"
+      await result.save();
+      return res.status(200).json({
+        message: "ok",
+        result: result
+      });
+    }
+    result.cod_count = "active"
     await result.save();
-   return  res.status(200).json({
-      message: "ok", 
-      result : result
+    res.status(200).json({
+      message: "ok",
+      result: result
     });
-  }
-  result.cod_count = "active"
-  await result.save();
-  res.status(200).json({
-    message: "ok", 
-    result : result
-  });
-  }catch(err){
+  } catch (err) {
     console.log(err);
     res.status(400).json({
-        message: err.message
+      message: err.message
     })
   }
 }
