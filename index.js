@@ -22,9 +22,6 @@ if (process.env.NODE_ENV == "production") {
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-app.get("/getImages/:image", (req, res) => {
-  res.sendFile(__dirname + `/uploads/${req.params.image}`);
-});
 // Route Imports
 const product = require("./routes/productRoute");
 const user = require("./routes/userRoute");
