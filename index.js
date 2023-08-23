@@ -17,10 +17,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 if (process.env.NODE_ENV == "production") {
-  console.log = function () { };
+    console.log = function () { };
 }
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+    res.send("Hello World!");
 });
 // Route Imports
 const product = require("./routes/productRoute");
@@ -60,11 +60,11 @@ mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", true);
 
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true, }).then((data) => {
-  console.log(`Mongodb connected with server: ${data.connection.host}`);
+    console.log(`Mongodb connected with server: ${data.connection.host}`);
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`Listening on port ${process.env.PORT}!`);
+    console.log(`Listening on port ${process.env.PORT}!`);
 });
 
 module.exports = { handler: serverless(app) };
