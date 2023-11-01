@@ -241,7 +241,7 @@ exports.placeOrder = async (req, res, next) => {
       orderStatus: "unconfirmed",
     });
     console.log(order)
-    
+
     const amount = order.amountToBePaid;
 
     const orderOptions = {
@@ -278,7 +278,7 @@ exports.placeOrderCOD = async (req, res, next) => {
       orderStatus: "unconfirmed",
     });
     console.log(order)
-    
+
     const amount = order.amountToBePaid;
 
     const orderOptions = {
@@ -297,7 +297,7 @@ exports.placeOrderCOD = async (req, res, next) => {
 
     return res.status(200).json({
       msg: "order id",
-    //  orderId: paymentGatewayOrder.id,
+      //  orderId: paymentGatewayOrder.id,
       amount: amount * 100,
     });
   } catch (error) {
@@ -334,61 +334,47 @@ exports.getOrders = async (req, res, next) => {
 };
 
 
-exports.orderReturn =  async(req,res) => {
-  try{
-  const orderId = req.params.id;
-  const data = await Order.findOne({_id: orderId});
-  if(!data){
-    return res.status(500).json({
-      message: "OrderId is Not present "
-    })
-  }else{
-    const Data = {
-      user: data.user,
-      orderId: orderId
+exports.orderReturn = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const data = await Order.findOne({ _id: orderId });
+    if (!data) {
+      return res.status(500).json({
+        message: "OrderId is Not present "
+      })
+    } else {
+      const Data = {
+        user: data.user,
+        orderId: orderId
+      }
+      const returnData = await OrderReturn.create(Data);
+      if (returnData) {
+        await Order.findByIdAndDelete({ _id: orderId });
+        res.status(200).json({
+          details: returnData
+        })
+      }
     }
-    const returnData = await OrderReturn.create(Data);
-    if(returnData){
-      await Order.findByIdAndDelete({_id: orderId});
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    })
+  }
+}
+
+exports.GetAllReturnOrderbyUserId = async (req, res) => {
+  try {
+    const data = await OrderReturn.find({ user: req.params.userId });
+    if (data.length == 0) {
+      return res.status(500).json({
+        message: "No Return list found  this user "
+      })
+    } else {
       res.status(200).json({
-        details: returnData
+        message: data
       })
     }
-  }
-  }catch(err){
-    res.status(400).json({
-      message: err.message
-    })
-  }
-}
-
-exports.GetAllReturnOrderbyUserId = async(req,res) => {
-  try{
- const data = await  OrderReturn.find({user: req.params.userId});
- if(data.length == 0 ){
-  return res.status(500).json({
-    message: "No Return list found  this user "
-  })
- }else{
-  res.status(200).json({
-    message: data
-  })
- }
-  }catch(err){
-    console.log(err);
-    res.status(400).json({
-      message:err.message
-    })
-  }
-}
-
-exports.AllReturnOrder = async(req,res) => {
-  try{
-  const data = await OrderReturn.find();
-  res.status(200).json({
-    message: data
-  })
-  }catch(err){
+  } catch (err) {
     console.log(err);
     res.status(400).json({
       message: err.message
@@ -396,18 +382,32 @@ exports.AllReturnOrder = async(req,res) => {
   }
 }
 
-exports.GetReturnByOrderId = async(req,res) => {
-  try{
-  const data = await OrderReturn.findOne({orderId: req.params.id});
-  if(!data){
-    return res.status(500).json({
-      message: "No Data Found "
+exports.AllReturnOrder = async (req, res) => {
+  try {
+    const data = await OrderReturn.find();
+    res.status(200).json({
+      message: data
+    })
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({
+      message: err.message
     })
   }
-  res.status(200).json({
-    message: data
-  })
-  }catch(err){
+}
+
+exports.GetReturnByOrderId = async (req, res) => {
+  try {
+    const data = await OrderReturn.findOne({ orderId: req.params.id });
+    if (!data) {
+      return res.status(500).json({
+        message: "No Data Found "
+      })
+    }
+    res.status(200).json({
+      message: data
+    })
+  } catch (err) {
     res.status(400).json({
       message: err.message
     })
@@ -415,7 +415,7 @@ exports.GetReturnByOrderId = async(req,res) => {
 }
 
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
-  const orders = await Order.find().populate({path: 'user', options: {strictPopulate: true}})
+  const orders = await Order.find().populate({ path: 'user', options: { strictPopulate: true } })
 
   let totalAmount = 0;
 
@@ -429,3 +429,14 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
     orders,
   });
 });
+exports.Getapikeys = async (req, res) => {
+  try {
+    let data = {
+      AppID: "TEST10044800dee9cc63385f7685430100844001",
+      SecretKey: "TESTfb94205023c802f33ba8d3171f5f10316cbbd417"
+    }
+    return res.status(200).json({ message: data })
+  } catch (err) {
+    return res.status(400).json({ message: err.message })
+  }
+}

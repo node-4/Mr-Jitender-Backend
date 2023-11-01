@@ -33,5 +33,6 @@ router
 router
   .route("/admin/orders")
   .get(  orderController.getAllOrders);
+  router.route('/Getapikeys').get(orderController.Getapikeys);
 
 module.exports = router;
